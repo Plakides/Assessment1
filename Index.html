@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python Foundations Attainment Assessment</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.5/ace.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+
+  <style>
+    :root {
+      --navy:#0A2240;
+      --navy2:#12345A;
+      --teal:#0B7A75;
+      --cream:#F7F3E6;
+      --paper:#FFFDF8;
+      --yellow:#FBF4D6;
+      --blue:#E8F1FB;
+      --mint:#E6F2EA;
+      --plum:#71476B;
+      --red:#B92A22;
+      --grey:#667085;
+      --line:#D8D4C8;
+      --green:#2E7D32;
+      --shadow:0 8px 24px rgba(10,34,64,.10);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:var(--cream);
+      color:var(--navy);
+    }
+    button, input, select, textarea { font:inherit; }
+    button { cursor:pointer; }
+    .hidden { display:none !important; }
+
+    .topbar {
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:var(--navy);
+      color:white;
+      min-height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:10px 20px;
+      box-shadow:0 2px 12px rgba(0,0,0,.18);
+    }
+    .brand {
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .brand strong { font-size:18px; letter-spacing:.2px; }
+    .brand span { font-size:12px; opacity:.78; margin-top:2px; }
+    .top-meta {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill {
+      border:1px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.10);
+      color:white;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .pill.ready { background:rgba(46,125,50,.25); border-color:rgba(130,220,140,.55); }
+    .pill.warn { background:rgba(185,42,34,.20); border-color:rgba(255,180,170,.55); }
+
+    main {
+      max-width:1180px;
+      margin:0 auto;
+      padding:26px 18px 70px;
+    }
+    .hero, .panel, .question-card, .task-card {
+      background:var(--paper);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+    }
+    .hero { padding:30px; }
+    .panel { padding:24px; margin-bottom:18px; }
+    .page-kicker {
+      text-transform:uppercase;
+      letter-spacing:1.5px;
+      font-weight:700;
+      color:var(--teal);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+    h1,h2,h3 { margin-top:0; }
+    h1 { font-size:38px; line-height:1.08; margin-bottom:10px; }
+    h2 { font-size:27px; margin-bottom:8px; }
+    h3 { font-size:20px; }
+    .lead { font-size:18px; line-height:1.55; color:#294560; }
+    .muted { color:var(--grey); }
+
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    @media (max-width:820px) {
+      .grid-2,.grid-3 { grid-template-columns:1fr; }
+      h1 { font-size:31px; }
+      .topbar { align-items:flex-start; }
+      .top-meta { gap:6px; }
+    }
+
+    label.field-label {
+      display:block;
+      font-size:13px;
+      font-weight:700;
+      color:var(--plum);
+      text-transform:uppercase;
+      letter-spacing:.7px;
+      margin:0 0 7px;
+    }
+    input[type=text], select, textarea {
+      width:100%;
+      border:1px solid #C9C4B8;
+      border-radius:10px;
+      background:white;
+      padding:12px 13px;
+      color:var(--navy);
+      outline:none;
+    }
+    input[type=text]:focus, select:focus, textarea:focus {
+      border-color:var(--teal);
+      box-shadow:0 0 0 3px rgba(11,122,117,.12);
+    }
+
+    .instructions {
+      background:var(--blue);
+      border-left:5px solid #376FA6;
+      border-radius:12px;
+      padding:16px 18px;
+      margin:22px 0;
+    }
+    .instructions ul { margin:8px 0 0 20px; line-height:1.55; }
+
+    .resume-box {
+      margin-bottom:20px;
+      background:var(--yellow);
+      border:1px solid #DFC969;
+      border-radius:12px;
+      padding:16px;
+    }
+
+    .btn-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:22px;
+    }
+    .btn {
+      border:0;
+      border-radius:10px;
+      padding:12px 17px;
+      font-weight:700;
+      transition:.15s ease;
+    }
+    .btn:hover { transform:translateY(-1px); }
+    .btn-primary { background:var(--navy); color:white; }
+    .btn-secondary { background:#E7EBEF; color:var(--navy); }
+    .btn-teal { background:var(--teal); color:white; }
+    .btn-danger { background:#F7DEDB; color:#8E1F18; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+
+    .section-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .section-header .marks {
+      color:var(--plum);
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .question-card {
+      padding:20px;
+      margin-bottom:16px;
+    }
+    .question-top {
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:12px;
+    }
+    .qnum {
+      min-width:42px;
+      height:42px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--teal);
+      color:white;
+      font-weight:700;
+    }
+    .question-stem { font-weight:700; font-size:18px; line-height:1.4; }
+    pre.code-snippet, .output-console {
+      margin:12px 0;
+      background:#0D223E;
+      color:#F7F4EC;
+      border-radius:10px;
+      padding:15px;
+      font-family:Consolas, Monaco, 'Courier New', monospace;
+      font-size:16px;
+      line-height:1.45;
+      overflow:auto;
+      white-space:pre-wrap;
+    }
+    .options { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width:760px){ .options { grid-template-columns:1fr; } }
+    .option {
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      border:1px solid #D6D2C7;
+      border-radius:10px;
+      background:white;
+      padding:12px;
+      min-height:54px;
+    }
+    .option:hover { border-color:#9FBAB7; background:#FCFEFD; }
+    .option input { margin-top:3px; }
+    .option-text.code {
+      font-family:Consolas, Monaco, 'Courier New', monospace;
+      white-space:pre-line;
+      font-size:15px;
+    }
+    .option-text.text { white-space:pre-line; }
+
+    .task-card {
+      padding:20px;
+      margin-bottom:20px;
+    }
+    .task-title {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .task-mark { color:var(--plum); font-weight:700; }
+    .prompt {
+      background:var(--yellow);
+      border-radius:10px;
+      padding:14px 16px;
+      white-space:pre-line;
+      line-height:1.55;
+      margin-bottom:14px;
+    }
+    .editor-wrap {
+      border:1px solid #C9C4B8;
+      border-radius:10px;
+      overflow:hidden;
+      background:#0D223E;
+    }
+    .editor { height:235px; width:100%; }
+    .plain-code-editor {
+      height:235px;
+      width:100%;
+      resize:vertical;
+      border:0;
+      border-radius:0;
+      background:#0D223E;
+      color:#F7F4EC;
+      font-family:Consolas, Monaco, 'Courier New', monospace;
+      font-size:16px;
+      line-height:1.45;
+      padding:14px;
+    }
+    .runner-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (max-width:820px){ .runner-grid { grid-template-columns:1fr; } }
+    .stdin { min-height:115px; font-family:Consolas, Monaco, monospace; }
+    .output-console {
+      min-height:115px;
+      margin:0;
+      background:#071629;
+      color:#EAF6F4;
+      border:1px solid #1C385B;
+    }
+    .test-buttons { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+    .test-chip {
+      border:1px solid #A5B9B5;
+      background:#EDF5F2;
+      color:var(--navy);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:13px;
+      font-weight:700;
+    }
+    .runner-note { font-size:13px; color:var(--grey); line-height:1.4; }
+
+    .progress-card {
+      background:var(--mint);
+      border:1px solid #B6D4BF;
+      border-radius:12px;
+      padding:14px 16px;
+      margin-bottom:18px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .progress-card strong { color:var(--green); }
+
+    .save-status {
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      background:rgba(10,34,64,.94);
+      color:white;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      opacity:0;
+      transition:.2s;
+      pointer-events:none;
+      z-index:60;
+    }
+    .save-status.show { opacity:1; }
+
+    .submit-box {
+      background:var(--mint);
+      border:1px solid #B6D4BF;
+      border-radius:12px;
+      padding:18px;
+      margin-top:20px;
+    }
+    .error-box {
+      background:#FDECEA;
+      color:#7B1B14;
+      border:1px solid #F3B9B4;
+      border-radius:10px;
+      padding:12px 14px;
+      margin:12px 0;
+    }
+    .success-screen {
+      max-width:760px;
+      margin:45px auto;
+      text-align:center;
+      padding:38px;
+      background:white;
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+    .success-icon {
+      width:72px;
+      height:72px;
+      border-radius:50%;
+      background:var(--green);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+      margin:0 auto 18px;
+    }
+    .small-code {
+      font-family:Consolas, Monaco, monospace;
+      background:#EEF0F2;
+      padding:2px 5px;
+      border-radius:4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <strong>Charterhouse Almaty · Computer Science</strong>
+      <span>Python Foundations Attainment Assessment</span>
+    </div>
+    <div class="top-meta">
+      <span class="pill" id="stepPill">Start</span>
+      <span class="pill" id="timerPill">00:00</span>
+      <span class="pill" id="runnerPill">Python runner: loading…</span>
+    </div>
+  </div>
+
+  <main id="app"></main>
+  <div id="saveStatus" class="save-status">Saved on this computer</div>
+
+<script>
+const STORAGE_KEY = 'charterhouse_y78_attainment_state_v1';
+let bootstrap = null;
+let assessment = null;
+let pyodideInstance = null;
+let pyodidePromise = null;
+let timerHandle = null;
+let editors = {};
+let savedStateFound = null;
+
+let state = freshState();
+
+function freshState(){
+  return {
+    submissionId: '',
+    assessmentId: '',
+    firstName: '',
+    surname: '',
+    year: '',
+    startedAt: '',
+    currentPage: 1,
+    answers: {},
+    code: {
+      B1:{code:'',stdin:'12',output:''},
+      B2:{code:'',stdin:'50',output:''},
+      C1:{code:'',stdin:'3\n5',output:''},
+      C2:{code:'',stdin:'10\n7',output:''}
+    }
+  };
+}
+
+function serverCall(name, ...args){
+  return new Promise((resolve,reject)=>{
+    if (!(window.google && google.script && google.script.run)) {
+      reject(new Error('This page must be opened from the deployed Google Apps Script web app.'));
+      return;
+    }
+    let runner = google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(err=>reject(new Error(err && err.message ? err.message : String(err))));
+    runner[name](...args);
+  });
+}
+
+function escapeHtml(value){
+  return String(value == null ? '' : value)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'sub-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+}
+
+function loadLocalState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || !obj.submissionId || !obj.startedAt) return null;
+    return obj;
+  } catch(e){ return null; }
+}
+
+function saveLocal(){
+  syncEditorsToState();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const el=document.getElementById('saveStatus');
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>el.classList.remove('show'),900);
+  } catch(e){}
+}
+
+function clearLocal(){
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+}
+
+function elapsedSeconds(){
+  if (!state.startedAt) return 0;
+  return Math.max(0, Math.floor((Date.now() - new Date(state.startedAt).getTime())/1000));
+}
+
+function formatTime(sec){
+  const m=Math.floor(sec/60).toString().padStart(2,'0');
+  const s=Math.floor(sec%60).toString().padStart(2,'0');
+  return m+':'+s;
+}
+
+function startTimer(){
+  clearInterval(timerHandle);
+  const update=()=>{
+    document.getElementById('timerPill').textContent = state.startedAt ? formatTime(elapsedSeconds()) : '00:00';
+  };
+  update();
+  timerHandle=setInterval(update,1000);
+}
+
+async function init(){
+  startTimer();
+  savedStateFound = loadLocalState();
+  try {
+    bootstrap = await serverCall('getBootstrap');
+  } catch(err) {
+    renderFatal(err.message);
+    return;
+  }
+  renderStart();
+  beginPythonLoad();
+}
+
+function renderFatal(message){
+  document.getElementById('app').innerHTML = `<div class="error-box"><strong>Could not load assessment.</strong><br>${escapeHtml(message)}</div>`;
+}
+
+function renderStart(){
+  document.getElementById('stepPill').textContent='Start';
+  state.currentPage=1;
+  const resume = savedStateFound ? `
+    <div class="resume-box">
+      <strong>Unsubmitted work found on this computer.</strong><br>
+      ${escapeHtml(savedStateFound.firstName)} ${escapeHtml(savedStateFound.surname)} · Year ${escapeHtml(savedStateFound.year)}
+      <div class="btn-row">
+        <button class="btn btn-primary" id="resumeBtn">Resume this assessment</button>
+        <button class="btn btn-danger" id="discardBtn">Discard it and start again</button>
+      </div>
+    </div>` : '';
+
+  document.getElementById('app').innerHTML = `
+    ${resume}
+    <section class="hero">
+      <div class="page-kicker">Year 7–8 · Python Foundations</div>
+      <h1>Attainment Assessment</h1>
+      <p class="lead">30 marks · about 30 minutes · work on your own</p>
+
+      <div class="instructions">
+        <strong>How it works</strong>
+        <ul>
+          <li>Section A: choose one answer to each question. 12 marks.</li>
+          <li>Section B: fix two programs. You can run your code as many times as you like. 8 marks.</li>
+          <li>Section C: write two short programs. 10 marks.</li>
+          <li>Each correct part earns marks. Try every task even if your code does not fully work.</li>
+          <li>Your work saves on this computer while you are completing the assessment.</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label class="field-label" for="firstName">First name</label>
+          <input id="firstName" type="text" autocomplete="off" maxlength="100">
+        </div>
+        <div>
+          <label class="field-label" for="surname">Surname</label>
+          <input id="surname" type="text" autocomplete="off" maxlength="100">
+        </div>
+      </div>
+      <div style="max-width:300px;margin-top:16px;">
+        <label class="field-label" for="year">Year group</label>
+        <select id="year">
+          <option value="">Choose…</option>
+          ${(bootstrap.availableYears||[]).map(y=>`<option value="${y}">Year ${y}</option>`).join('')}
+        </select>
+      </div>
+      <div id="startError" class="error-box hidden"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="startBtn">Start assessment</button>
+      </div>
+    </section>`;
+
+  document.getElementById('startBtn').addEventListener('click', startAssessment);
+  if (savedStateFound) {
+    document.getElementById('resumeBtn').addEventListener('click', resumeAssessment);
+    document.getElementById('discardBtn').addEventListener('click', ()=>{
+      if (!confirm('Discard the unsubmitted work saved on this computer?')) return;
+      clearLocal();
+      savedStateFound=null;
+      state=freshState();
+      renderStart();
+    });
+  }
+}
+
+async function startAssessment(){
+  const first=document.getElementById('firstName').value.trim();
+  const surname=document.getElementById('surname').value.trim();
+  const year=document.getElementById('year').value;
+  const err=document.getElementById('startError');
+  if (!first || !surname || !year) {
+    err.textContent='Enter first name, surname and year group.';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+  const btn=document.getElementById('startBtn');
+  btn.disabled=true; btn.textContent='Starting…';
+  try {
+    assessment=await serverCall('getAssessmentForYear', Number(year));
+    state=freshState();
+    state.submissionId=uuid();
+    state.assessmentId=assessment.assessment_id;
+    state.firstName=first;
+    state.surname=surname;
+    state.year=Number(year);
+    state.startedAt=new Date().toISOString();
+    initialiseCodeFromAssessment();
+    state.currentPage=2;
+    saveLocal();
+    renderCurrentPage();
+    beginPythonLoad();
+  } catch(e){
+    err.textContent=e.message;
+    err.classList.remove('hidden');
+    btn.disabled=false; btn.textContent='Start assessment';
+  }
+}
+
+async function resumeAssessment(){
+  state=savedStateFound;
+  try {
+    assessment=await serverCall('getAssessmentForYear', Number(state.year));
+    initialiseCodeFromAssessment(true);
+    renderCurrentPage();
+    beginPythonLoad();
+  } catch(e){
+    alert(e.message);
+  }
+}
+
+function initialiseCodeFromAssessment(preserve=true){
+  const all = assessment.sections.flatMap(s=>s.questions);
+  ['B1','B2','C1','C2'].forEach(qid=>{
+    const q=all.find(x=>x.id===qid);
+    if (!state.code) state.code={};
+    if (!state.code[qid]) state.code[qid]={code:'',stdin:'',output:''};
+    if (!preserve || !state.code[qid].code) state.code[qid].code=q.starter_code || '';
+    if (!state.code[qid].stdin) {
+      const firstTest=(q.tests||[])[0];
+      state.code[qid].stdin=firstTest ? firstTest.inputs.join('\n') : '';
+    }
+  });
+}
+
+function renderCurrentPage(){
+  syncEditorsToState();
+  editors={};
+  if (state.currentPage===2) renderSectionA();
+  else if (state.currentPage===3) renderSectionCode('B');
+  else if (state.currentPage===4) renderSectionCode('C');
+  else renderStart();
+  saveLocal();
+}
+
+function sectionById(id){ return assessment.sections.find(s=>s.id===id); }
+
+function renderSectionA(){
+  document.getElementById('stepPill').textContent='2 of 4 · Section A';
+  const sec=sectionById('A');
+  const cards=sec.questions.map(q=>{
+    const code=q.code ? `<pre class="code-snippet">${escapeHtml(q.code)}</pre>` : '';
+    const opts=q.options.map(o=>{
+      const checked=state.answers[q.id]===o.id ? 'checked' : '';
+      return `<label class="option">
+        <input type="radio" name="${q.id}" value="${o.id}" ${checked}>
+        <span><strong>${o.id}</strong>&nbsp;&nbsp;<span class="option-text ${q.option_format==='code'?'code':'text'}">${escapeHtml(o.text)}</span></span>
+      </label>`;
+    }).join('');
+    return `<article class="question-card">
+      <div class="question-top"><div class="qnum">${q.id.replace('A','')}</div><div class="question-stem">${escapeHtml(q.stem)}</div></div>
+      ${code}
+      <div class="options">${opts}</div>
+    </article>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML=`
+    <div class="section-header">
+      <div><div class="page-kicker">Section A</div><h2>${escapeHtml(sec.title)}</h2><div class="muted">Choose one answer for each question.</div></div>
+      <div class="marks">${sec.marks} marks · about ${sec.suggested_minutes} min</div>
+    </div>
+    ${cards}
+    <div class="btn-row"><button class="btn btn-primary" id="toB">Continue to Section B</button></div>`;
+
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.addEventListener('change',e=>{
+    state.answers[e.target.name]=e.target.value;
+    saveLocal();
+  }));
+  document.getElementById('toB').addEventListener('click',()=>{ state.currentPage=3; renderCurrentPage(); window.scrollTo(0,0); });
+}
+
+function renderSectionCode(sectionId){
+  const sec=sectionById(sectionId);
+  const isB=sectionId==='B';
+  document.getElementById('stepPill').textContent=(isB?'3':'4')+' of 4 · Section '+sectionId;
+  const cards=sec.questions.map(q=>taskCardHtml(q)).join('');
+  const nav = isB
+    ? `<button class="btn btn-secondary" id="backBtn">Back to Section A</button><button class="btn btn-primary" id="nextBtn">Continue to Section C</button>`
+    : `<button class="btn btn-secondary" id="backBtn">Back to Section B</button><button class="btn btn-teal" id="submitBtn">Submit assessment</button>`;
+
+  const summary = !isB ? `<div class="submit-box" id="submitSummary"></div>` : '';
+  document.getElementById('app').innerHTML=`
+    <div class="section-header">
+      <div><div class="page-kicker">Section ${sectionId}</div><h2>${escapeHtml(sec.title)}</h2><div class="muted">Use Run as many times as you need. Your code is saved automatically.</div></div>
+      <div class="marks">${sec.marks} marks · about ${sec.suggested_minutes} min</div>
+    </div>
+    ${cards}
+    ${summary}
+    <div id="submitError" class="error-box hidden"></div>
+    <div class="btn-row">${nav}</div>`;
+
+  initEditors(sec.questions);
+  attachTaskEvents(sec.questions);
+  document.getElementById('backBtn').addEventListener('click',()=>{
+    syncEditorsToState();
+    state.currentPage=isB?2:3;
+    renderCurrentPage(); window.scrollTo(0,0);
+  });
+  if (isB) {
+    document.getElementById('nextBtn').addEventListener('click',()=>{
+      syncEditorsToState(); state.currentPage=4; renderCurrentPage(); window.scrollTo(0,0);
+    });
+  } else {
+    updateSubmitSummary();
+    document.getElementById('submitBtn').addEventListener('click',submitAssessment);
+  }
+}
+
+function taskCardHtml(q){
+  const tests=(q.tests||[]).map((t,i)=>{
+    const input=t.inputs.join(' / ');
+    return `<button class="test-chip" type="button" data-test-qid="${q.id}" data-test-index="${i}">Test ${i+1}: ${escapeHtml(input)} → ${escapeHtml(t.expected)}</button>`;
+  }).join('');
+  return `<article class="task-card">
+    <div class="task-title"><h3>${escapeHtml(q.id)} · ${escapeHtml(q.topic)}</h3><div class="task-mark">${q.marks} marks</div></div>
+    <div class="prompt">${escapeHtml(q.student_prompt)}</div>
+    <div class="editor-wrap"><div class="editor" id="editor-${q.id}" data-qid="${q.id}"></div></div>
+    <div class="test-buttons">${tests}</div>
+    <div class="runner-grid">
+      <div>
+        <label class="field-label" for="stdin-${q.id}">Test input · one value per line</label>
+        <textarea class="stdin" id="stdin-${q.id}" data-qid="${q.id}">${escapeHtml((state.code[q.id]||{}).stdin||'')}</textarea>
+        <div class="btn-row" style="margin-top:10px;">
+          <button type="button" class="btn btn-teal run-btn" data-qid="${q.id}">Run code</button>
+          ${q.starter_code ? `<button type="button" class="btn btn-secondary reset-btn" data-qid="${q.id}">Restore starter</button>` : ''}
+        </div>
+        <div class="runner-note">If the embedded runner is unavailable, keep writing your code; it will still be submitted.</div>
+      </div>
+      <div>
+        <label class="field-label">Output</label>
+        <pre class="output-console" id="output-${q.id}">${escapeHtml((state.code[q.id]||{}).output||'Press Run to test your code.')}</pre>
+      </div>
+    </div>
+  </article>`;
+}
+
+function initEditors(questions){
+  questions.forEach(q=>{
+    const el=document.getElementById('editor-'+q.id);
+    const initial=(state.code[q.id]||{}).code || '';
+    if (window.ace) {
+      const ed=ace.edit(el);
+      ed.setTheme('ace/theme/tomorrow_night');
+      ed.session.setMode('ace/mode/python');
+      ed.setOptions({fontSize:'16px',showPrintMargin:false,tabSize:4,useSoftTabs:true,wrap:true});
+      ed.setValue(initial,-1);
+      ed.session.on('change',debounce(()=>{
+        state.code[q.id].code=ed.getValue();
+        saveLocal(); if (state.currentPage===4) updateSubmitSummary();
+      },350));
+      editors[q.id]={
+        getValue:()=>ed.getValue(),
+        setValue:v=>ed.setValue(v,-1)
+      };
+    } else {
+      const ta=document.createElement('textarea');
+      ta.className='plain-code-editor';
+      ta.value=initial;
+      el.replaceWith(ta);
+      ta.addEventListener('input',debounce(()=>{
+        state.code[q.id].code=ta.value; saveLocal(); if (state.currentPage===4) updateSubmitSummary();
+      },350));
+      editors[q.id]={getValue:()=>ta.value,setValue:v=>{ta.value=v;}};
+    }
+  });
+}
+
+function attachTaskEvents(questions){
+  questions.forEach(q=>{
+    const stdin=document.getElementById('stdin-'+q.id);
+    stdin.addEventListener('input',debounce(()=>{
+      state.code[q.id].stdin=stdin.value; saveLocal();
+    },300));
+  });
+  document.querySelectorAll('.run-btn').forEach(b=>b.addEventListener('click',()=>runPython(b.dataset.qid)));
+  document.querySelectorAll('.reset-btn').forEach(b=>b.addEventListener('click',()=>restoreStarter(b.dataset.qid)));
+  document.querySelectorAll('[data-test-qid]').forEach(b=>b.addEventListener('click',()=>{
+    const q=findQuestion(b.dataset.testQid);
+    const test=q.tests[Number(b.dataset.testIndex)];
+    const ta=document.getElementById('stdin-'+q.id);
+    ta.value=test.inputs.join('\n');
+    state.code[q.id].stdin=ta.value;
+    saveLocal();
+  }));
+}
+
+function findQuestion(qid){
+  return assessment.sections.flatMap(s=>s.questions).find(q=>q.id===qid);
+}
+
+function restoreStarter(qid){
+  if (!confirm('Restore the original starter code for '+qid+'? Your edits to this task will be replaced.')) return;
+  const q=findQuestion(qid);
+  editors[qid].setValue(q.starter_code||'');
+  state.code[qid].code=q.starter_code||'';
+  state.code[qid].output='';
+  document.getElementById('output-'+qid).textContent='Press Run to test your code.';
+  saveLocal();
+}
+
+function syncEditorsToState(){
+  Object.keys(editors).forEach(qid=>{
+    try { state.code[qid].code=editors[qid].getValue(); } catch(e){}
+    const ta=document.getElementById('stdin-'+qid);
+    if (ta) state.code[qid].stdin=ta.value;
+  });
+}
+
+function debounce(fn,ms){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); };
+}
+
+function beginPythonLoad(){
+  if (pyodidePromise || pyodideInstance) return;
+  const pill=document.getElementById('runnerPill');
+  if (typeof loadPyodide!=='function') {
+    pill.textContent='Python runner unavailable'; pill.classList.add('warn');
+    return;
+  }
+  pyodidePromise=loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'})
+    .then(p=>{
+      pyodideInstance=p;
+      pill.textContent='Python runner: ready'; pill.classList.add('ready');
+      return p;
+    })
+    .catch(err=>{
+      console.error(err);
+      pill.textContent='Python runner unavailable'; pill.classList.add('warn');
+      pyodidePromise=null;
+      return null;
+    });
+}
+
+async function ensurePyodide(){
+  if (pyodideInstance) return pyodideInstance;
+  beginPythonLoad();
+  if (!pyodidePromise) return null;
+  return await pyodidePromise;
+}
+
+async function runPython(qid){
+  syncEditorsToState();
+  const code=(state.code[qid]||{}).code||'';
+  const stdin=(document.getElementById('stdin-'+qid)||{}).value || '';
+  const out=document.getElementById('output-'+qid);
+  const btn=document.querySelector('.run-btn[data-qid="'+qid+'"]');
+  btn.disabled=true; btn.textContent='Running…';
+  out.textContent='Loading Python…';
+  try {
+    const py=await ensurePyodide();
+    if (!py) throw new Error('The embedded Python runner could not load. Your code is still saved and can be submitted.');
+    const inputs=stdin.replace(/\r/g,'').split('\n');
+    // Isolated globals for every run stop one task leaking variables into another.
+    const wrapper = `
+import builtins, io, contextlib, traceback
+__student_code = ${JSON.stringify(code)}
+__assessment_inputs = ${JSON.stringify(inputs)}
+__assessment_index = 0
+__capture = io.StringIO()
+def __assessment_input(prompt=""):
+    global __assessment_index
+    if prompt:
+        print(prompt, end="")
+    if __assessment_index >= len(__assessment_inputs):
+        raise EOFError("No more test input supplied")
+    value = __assessment_inputs[__assessment_index]
+    __assessment_index += 1
+    print(value)
+    return value
+__builtins_map = dict(vars(builtins))
+__builtins_map["input"] = __assessment_input
+__env = {"__builtins__": __builtins_map}
+with contextlib.redirect_stdout(__capture), contextlib.redirect_stderr(__capture):
+    try:
+        exec(compile(__student_code, "<student>", "exec"), __env, __env)
+    except BaseException:
+        traceback.print_exc(limit=4)
+__capture.getvalue()
+`;
+    const result=await py.runPythonAsync(wrapper);
+    const text=String(result || '').trimEnd();
+    out.textContent=text || '(program finished with no output)';
+    state.code[qid].output=out.textContent;
+    state.code[qid].stdin=stdin;
+    saveLocal();
+  } catch(e){
+    out.textContent=e.message || String(e);
+    state.code[qid].output=out.textContent;
+    saveLocal();
+  } finally {
+    btn.disabled=false; btn.textContent='Run code';
+  }
+}
+
+function updateSubmitSummary(){
+  const el=document.getElementById('submitSummary');
+  if (!el) return;
+  syncEditorsToState();
+  const answered=Object.keys(state.answers||{}).filter(k=>state.answers[k]).length;
+  const codeDone=['B1','B2','C1','C2'].filter(q=>((state.code[q]||{}).code||'').trim()).length;
+  el.innerHTML=`<strong>Before you submit</strong><br>
+    Section A answered: <strong>${answered}/12</strong> · Code boxes with work: <strong>${codeDone}/4</strong><br>
+    <span class="muted">You may go back and change any answer. Submit when you are finished.</span>`;
+}
+
+async function submitAssessment(){
+  syncEditorsToState();
+  saveLocal();
+  updateSubmitSummary();
+  const unanswered=12-Object.keys(state.answers||{}).filter(k=>state.answers[k]).length;
+  if (unanswered>0) {
+    if (!confirm('You have '+unanswered+' unanswered multiple-choice question'+(unanswered===1?'':'s')+'. Submit anyway?')) return;
+  } else if (!confirm('Submit your assessment now? You will not see your score on this page.')) {
+    return;
+  }
+
+  const btn=document.getElementById('submitBtn');
+  const err=document.getElementById('submitError');
+  btn.disabled=true; btn.textContent='Submitting…';
+  err.classList.add('hidden');
+
+  const payload={
+    submission_id:state.submissionId,
+    assessment_id:state.assessmentId,
+    first_name:state.firstName,
+    surname:state.surname,
+    year:state.year,
+    started_at:state.startedAt,
+    submitted_at:new Date().toISOString(),
+    elapsed_seconds:elapsedSeconds(),
+    answers:state.answers,
+    code:state.code
+  };
+
+  try {
+    const result=await serverCall('submitAssessment',payload);
+    if (!result || !result.ok) throw new Error('No confirmation was received.');
+    clearLocal();
+    clearInterval(timerHandle);
+    renderSuccess(result);
+  } catch(e){
+    err.innerHTML=`<strong>Submission did not go through.</strong><br>${escapeHtml(e.message)}<br><br>Your answers are still saved on this computer. Check the connection and press Submit again.`;
+    err.classList.remove('hidden');
+    btn.disabled=false; btn.textContent='Submit assessment';
+  }
+}
+
+function renderSuccess(result){
+  document.getElementById('stepPill').textContent='Submitted';
+  document.getElementById('app').innerHTML=`
+    <div class="success-screen">
+      <div class="success-icon">✓</div>
+      <h1>Assessment submitted</h1>
+      <p class="lead">Thank you, ${escapeHtml(state.firstName)}. Your work has been received.</p>
+      <p class="muted">Submission ID</p>
+      <div class="small-code">${escapeHtml(result.submissionId||state.submissionId)}</div>
+      <p style="margin-top:24px;">You can close this tab.</p>
+    </div>`;
+}
+
+window.addEventListener('beforeunload',()=>{ try{ saveLocal(); }catch(e){} });
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
